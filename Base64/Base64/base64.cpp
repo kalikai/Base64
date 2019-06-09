@@ -4,6 +4,7 @@
 
 using namespace std;
 
+//Base 64编码表
 const char base_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static int myEncode(const uint8_t* bindata, char* base64, int binlength){
@@ -13,12 +14,12 @@ static int myEncode(const uint8_t* bindata, char* base64, int binlength){
 	for (i = 0, j = 0; i < binlength; i += 3) {
 		/*前6个bit 首先右移两位*/
 		current = (bindata[i] >> 2);
-		current &= (uint8_t)0x3F;
-		base64[j++] = base_table[(int)current];
+		current &= (uint8_t)0x3F;//0x3F == 00111111 指定取后6位字节的数
+		base64[j++] = base_table[(int)current];//switchTbale
 		
 		/*第一个字节的最后两个二进制位*/
-		current = ((uint8_t)(bindata[i] << 4)) & ((uint8_t)0x30);
-		if (i + 1 >= binlength) {
+		current = ((uint8_t)(bindata[i] << 4)) & ((uint8_t)0x30);//0x30 == 00110000 指定取第3、4位字节的数
+		if (i + 1 >= binlength) {//不足位的时候，自动补足
 			base64[j++] = base_table[(int)current];
 			base64[j++] = '=';
 			base64[j++] = '=';
@@ -27,10 +28,10 @@ static int myEncode(const uint8_t* bindata, char* base64, int binlength){
 
 		/*9~12bit, 并连接7~8bit*/
 		current |= ((uint8_t)(bindata[i + 1] >> 4)) & ((uint8_t)0x0F);
-		base64[j++] = base_table[(int)current];
+		base64[j++] = base_table[(int)current];//switchTbale
 		
 		/*13~16bit*/
-		current = ((uint8_t)(bindata[i + 1] << 2)) & ((uint8_t)0x3C);
+		current = ((uint8_t)(bindata[i + 1] << 2)) & ((uint8_t)0x3C);//0x3c == 00111100 取指定的第2、3、4、5位
 		
 		/*就此结尾*/
 		if (i + 2 >= binlength) {
@@ -40,12 +41,12 @@ static int myEncode(const uint8_t* bindata, char* base64, int binlength){
 		}
 		
 		/*17~18bit, 并连接13~16bit*/
-		current |= ((uint8_t)(bindata[i + 2] >> 6)) & ((uint8_t)0x03);
-		base64[j++] = base_table[(int)current];
+		current |= ((uint8_t)(bindata[i + 2] >> 6)) & ((uint8_t)0x03);//0x3 == 00000011 取指定的第7、8位  后4位和前2位拼接
+		base64[j++] = base_table[(int)current];//switchTbale
 		
 		/*19~24bit*/
-		current = ((uint8_t)bindata[i + 2]) & ((uint8_t)0x3F);
-		base64[j++] = base_table[(int)current];
+		current = ((uint8_t)bindata[i + 2]) & ((uint8_t)0x3F);//0x3F == 00111111 取指定的第3、4、5、6、7、8
+		base64[j++] = base_table[(int)current];//switchTbale
 	}
 	base64[j] = '\0';
 	return j;
@@ -121,7 +122,7 @@ static int base64_decode(const uint8_t* bindata, char* base64, int binlength)
 	return j;
 }
 void main(void) {
-	char text[] = "Guy";
+	char text[] = "a";
 	char* str = text;
 	printf("input: %s \n", str);
 	char* base64_str = (char* )calloc(1, 1024);
